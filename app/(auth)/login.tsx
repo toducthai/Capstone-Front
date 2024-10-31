@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import { StyleSheet, View, Text, Pressable, Image, SafeAreaView } from "react-native";
 import { Color, Border, FontSize, Padding, Gap } from "../../constants/LoginGlobalStyles";
-import HeaderBar from "../../components/HeaderBar";
+import HeaderBar from "@/components/HeaderBar";
 import InputField from "@/components/InputField";
 import { Href, router, useLocalSearchParams } from "expo-router";
 import { useAuth } from '../AuthContext';
@@ -13,10 +13,11 @@ const Middle = () => {
   const { login } = useAuth();
   const { redirect } = useLocalSearchParams();
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    // <SafeAreaView style={{ flex: 1 }}>
       <View>
-        {/*<HeaderBar isMain={false} title="로그인" />*/}
+        
         <View style={styles.middle}>
+          <HeaderBar title="로그인" isMain={false}/>
           <View style={styles.originLogin}>
             <View style={styles.inputContainer}>
               <InputField title="이메일 아이디" value={email} onChangeText={setEmail} secureTextEntry={false} />
@@ -67,14 +68,20 @@ const Middle = () => {
               <View style={styles.divider} />
             </View>
             <View style={styles.socialButtonGroup}>
-              <Image style={styles.socialLogo} resizeMode="cover" source={require("../../assets/images/Logo_Naver.png")} />
-              <Image style={styles.socialLogo} resizeMode="cover" source={require("../../assets/images/Logo_Kakao.png")} />
-              <Image style={styles.socialLogo} resizeMode="cover" source={require("../../assets/images/Logo_Google.png")} />
+              <Pressable onPress={() => {alert("Naver Login")}}>
+                <Image style={styles.socialLogo} resizeMode="cover" source={require("../../assets/images/Logo_Naver.png")} />
+              </Pressable>
+              <Pressable onPress={() => {alert("Kakao Login")}}>
+                <Image style={styles.socialLogo} resizeMode="cover" source={require("../../assets/images/Logo_Kakao.png")} />
+              </Pressable>
+              <Pressable onPress={() => {alert("Google Login")}}>
+                <Image style={styles.socialLogo} resizeMode="cover" source={require("../../assets/images/Logo_Google.png")} />
+              </Pressable>
             </View>
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    // </SafeAreaView>
   );
 };
 const styles = StyleSheet.create({

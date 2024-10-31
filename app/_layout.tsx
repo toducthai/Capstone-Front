@@ -7,7 +7,7 @@ import { Slot } from 'expo-router';
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Stack>
+      <Stack screenOptions={{headerShown:false}}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </AuthProvider>
