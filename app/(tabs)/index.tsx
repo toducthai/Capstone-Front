@@ -15,8 +15,16 @@ export default function Home() {
   const [slideAnimLeft] = useState(new Animated.Value(-width)); // 왼쪽 모달의 시작 위치 설정
   const [selectModalVisible, setSelectModalVisible] = useState(false);
   const [slideAnim] = useState(new Animated.Value(width)); // 오른쪽 모달의 시작 위치 설정
-  const [days, setDays] = useState<number[]>([1]); // 여행 계획 일차 상태로 관리
-  const [places, setPlaces] = useState([{ id: 1, name: '해운대 해수욕장', location: '부산광역시 해운대구', imageUrl: '' , checked: false}]);
+  const [days, setDays] = useState<{ day: number, places: { id: number, name: string, location: string, imageUrl: string }[] }[]>([{
+    day: 1,
+    places: [
+      // { id: 1, name: '해운대 해수욕장', location: '부산광역시 해운대구', imageUrl: '' }
+    ]
+  }]); // 여행 계획 일차 상태로 관리
+  const [places, setPlaces] = useState([{ id: 1, name: '해운대1', location: '부산광역시 해운대구', imageUrl: '', checked: false },
+  { id: 2, name: '해운대2', location: '부산광역시 해운대구', imageUrl: '', checked: false },
+  { id: 3, name: '해운대3', location: '부산광역시 해운대구', imageUrl: '', checked: false }
+  ]);
 
   useEffect(() => {
     setMessages([
@@ -26,8 +34,8 @@ export default function Home() {
         createdAt: new Date(),
         user: {
           _id: 2,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
+          name: '동글이',
+          avatar: '',
         },
       },
     ]);
@@ -36,10 +44,16 @@ export default function Home() {
   const onSend = useCallback(async (messages: IMessage[] = []) => {
     setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
     const userMessage = messages[0].text;
+    const additionalInfo = {
+      userId: 1,
+      timestamp: new Date().toISOString(),
+      location: '부산광역시 해운대구', // 예시 정보
+    };
     try {
       const response = await axios.post('https://your-server-endpoint.com/api/chat', {
-        message: userMessage,
-      });
+      message: userMessage,
+      additionalInfo: additionalInfo,
+    });
 
       const botMessage = response.data.reply;
       const newMessage: IMessage = {
@@ -52,14 +66,27 @@ export default function Home() {
           avatar: 'https://placeimg.com/140/140/tech',
         },
       };
-
       setMessages(previousMessages => GiftedChat.append(previousMessages, [newMessage]));
     } catch (error) {
-      console.error('Error sending message to server:', error);
+      // console.error('Error sending message to server:', error);
+      const newMessage: IMessage = {
+        _id: Math.random().toString(),
+        text: "메세지가 전달되지 못했습니다.",
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          name: 'ChatBot',
+          avatar: 'https://placeimg.com/140/140/tech',
+        },
+      };
+      setMessages(previousMessages => GiftedChat.append(previousMessages, [newMessage]));
     }
   }, []);
 
   const openSelectModal = () => {
+    if (planModalVisible) {
+      closePlanModal();
+    }
     setSelectModalVisible(true);
     Animated.timing(slideAnim, {
       toValue: 0,
@@ -77,6 +104,9 @@ export default function Home() {
   };
 
   const openPlanModal = () => {
+    if (selectModalVisible) {
+      closeSelectModal();
+    }
     setPlanModalVisible(true);
     Animated.timing(slideAnimLeft, {
       toValue: 0,
@@ -95,9 +125,9 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
+      {/* <View style={styles.headerContainer}>
         <Text style={styles.headerText}>TRAVEL MAIKER</Text>
-      </View>
+      </View> */}
       <GiftedChat
         placeholder={'메세지를 입력하세요...'}
         alwaysShowSend={true}
@@ -119,12 +149,17 @@ export default function Home() {
       {/* 여행지 선택 모달 */}
       {selectModalVisible && (
         <Animated.View style={[styles.animatedModal, { transform: [{ translateX: slideAnim }] }]}>
-          <Text style={styles.modalHeaderText}>여행지 선택</Text>
+          <View style={styles.buttonContainer}>
+            <Text style={styles.modalHeaderText}>여행지 선택</Text>
+            {/* 닫기 버튼 */}
+            <TouchableOpacity style={styles.closeSelectButton} onPress={closeSelectModal}>
+              <Text style={styles.closeButtonText}>X</Text>
+            </TouchableOpacity>
+          </View>
           <ScrollView style={styles.scrollView}>
             {places.map(place => (
               <View key={place.id} style={styles.placeCard}>
-                <TouchableOpacity
-                  style={styles.checkboxContainer}
+                <TouchableOpacity style={styles.checkboxContainer}
                   onPress={() => {
                     setPlaces(prevPlaces => prevPlaces.map(p => p.id === place.id ? { ...p, checked: !p.checked } : p));
                   }}
@@ -138,72 +173,84 @@ export default function Home() {
                   <View style={styles.textContainer}>
                     <Text style={styles.placeName}>{place.name}</Text>
                     <Text style={styles.placeLocation}>위치: {place.location}</Text>
-                    <TouchableOpacity style={styles.detailButton}>
-                      <Text style={styles.detailButtonText}>클릭하여 자세히 보기 &gt;</Text>
-                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
             ))}
           </ScrollView>
           {/* 추가 버튼 */}
-          <TouchableOpacity
-            style={styles.completeButton}
-            onPress={() => {
-              // 체크된 여행지를 여행 계획 모달로 추가
-              const selectedPlaces = places.filter(place => place.checked);
-              setDays(prevDays => [...prevDays, ...selectedPlaces.map((_, index) => prevDays.length + index + 1)]);
-              closeSelectModal();
-            }}
+          <TouchableOpacity style={styles.completeButton} onPress={() => {
+            // 체크된 여행지를 선택한 일차에 추가
+            const selectedPlaces = places.filter(place => place.checked);
+            setDays(prevDays => {
+              const updatedDays = [...prevDays];
+              selectedPlaces.forEach(place => {
+                const dayIndex = updatedDays.length - 1;
+                updatedDays[dayIndex].places.push(place);
+              });
+              return updatedDays;
+            });
+            // 체크된 여행지 상태 초기화
+            setPlaces(prevPlaces => prevPlaces.map(place => ({ ...place, checked: false })));
+            closeSelectModal();
+          }}
           >
             <Text style={styles.completeButtonText}>추가</Text>
-          </TouchableOpacity>
-          {/* 닫기 버튼 */}
-          <TouchableOpacity style={styles.closeSelectButton} onPress={closeSelectModal}>
-            <Text style={styles.closeButtonText}>닫기</Text>
           </TouchableOpacity>
         </Animated.View>
       )}
       {/* 여행 계획 모달 */}
       {planModalVisible && (
         <Animated.View style={[styles.animatedModalLeft, { transform: [{ translateX: slideAnimLeft }] }]}>
-          <Text style={styles.modalHeaderText}>여행 계획</Text>
+          <View style={styles.buttonContainer}>
+            <Text style={styles.modalHeaderText}>여행 계획</Text>
+            <TouchableOpacity style={styles.closeScheduleButton} onPress={closePlanModal}>
+              <Text style={styles.closeButtonText}>X</Text>
+            </TouchableOpacity>
+          </View>
           <ScrollView style={styles.scrollView}>
             {/* 여러 일차의 일정들 */}
             {days.map((day) => (
-              <View key={day} style={styles.dayContainer}>
-                <TouchableOpacity style={styles.dayButton}>
-                  <Text style={styles.dayText}>{day}일차</Text>
-                </TouchableOpacity>
-                {/* 일정 삭제 버튼 */}
-                <TouchableOpacity
-                  style={styles.deleteScheduleButton}
-                  onPress={() => {
-                    // 일정 삭제 로직 구현: 삭제 후 일차 재정렬
-                    setDays(prevDays => prevDays.filter(d => d !== day).map((d, index) => index + 1));
-                  }}
-                >
-                  <Text style={styles.deleteScheduleText}>-</Text>
-                </TouchableOpacity>
+              <View key={day.day} style={styles.dayContainer}>
+                <Text style={styles.dayText}>Day{day.day}</Text>
+                {day.places.map((place) => (
+                  <View key={place.id} style={styles.placeCard}>
+                    <Text style={styles.placeName}>{place.name}</Text>
+                    {/* 일정 삭제 버튼 */}
+                    <TouchableOpacity style={styles.deleteScheduleButton} onPress={() => {
+                      setDays(prevDays => prevDays.map(d => {
+                        if (d.day === day.day) {
+                          return { ...d, places: d.places.filter(p => p.id !== place.id) };
+                        }
+                        return d;
+                      }));
+                    }}
+                    >
+                      <Text style={styles.deleteScheduleText}>-</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
               </View>
             ))}
             {/* 일정 추가 버튼 */}
             <TouchableOpacity
               style={styles.addScheduleButton}
               onPress={() => {
-                setDays(prevDays => [...prevDays, prevDays.length + 1]);
+                setDays(prevDays => [
+                  ...prevDays,
+                  { day: prevDays.length + 1, places: [] }
+                ]);
               }}
             >
               <Text style={styles.addScheduleText}>+</Text>
             </TouchableOpacity>
           </ScrollView>
-          {/* 닫기 버튼 */}
-          <TouchableOpacity style={styles.closeScheduleButton} onPress={closePlanModal}>
-            <Text style={styles.closeButtonText}>닫기</Text>
+          {/*저장 버튼 컨테이너 */}
+          <TouchableOpacity style={styles.saveScheduleButton} onPress={() => { /* 저장 로직 구현 */ }}>
+            <Text style={styles.saveButtonText}>저장하기</Text>
           </TouchableOpacity>
         </Animated.View>
       )}
-
     </View>
   );
 }
@@ -274,16 +321,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   closeScheduleButton: {
-    marginTop: 20,
     alignSelf: 'flex-end',
-    backgroundColor: '#28a745',
+    backgroundColor: '#e0e0e0',
     padding: 15,
     borderRadius: 15,
   },
   closeSelectButton: {
-    marginTop: 20,
     alignSelf: 'flex-end',
-    backgroundColor: '#6200ee',
+    backgroundColor: '#e0e0e0',
     padding: 15,
     borderRadius: 15,
   },
@@ -302,7 +347,21 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
   },
-
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  saveScheduleButton: {
+    padding: 15,
+    backgroundColor: '#007BFF',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
   // Modal 창 스타일 ====== END
   planText: {
     fontSize: 18,
@@ -320,7 +379,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dayText: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   addScheduleButton: {
@@ -372,7 +431,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   placeName: {
-    fontSize: 18,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   placeLocation: {
@@ -401,5 +460,4 @@ const styles = StyleSheet.create({
   checkedCheckbox: {
     backgroundColor: '#6200ee',
   },
-
 });
