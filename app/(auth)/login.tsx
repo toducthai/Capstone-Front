@@ -1,23 +1,24 @@
 import * as React from "react";
 import { useState } from "react";
-import { StyleSheet, View, Text, Pressable, Image, SafeAreaView } from "react-native";
+import { StyleSheet, View, Text, Pressable, Image } from "react-native";
 import { Color, Border, FontSize, Padding, Gap } from "../../constants/LoginGlobalStyles";
 import HeaderBar from "@/components/HeaderBar";
 import InputField from "@/components/InputField";
 import { Href, router, useLocalSearchParams } from "expo-router";
 import { useAuth } from '../AuthContext';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-const Middle = () => {
+const Login = () => {
+  const insets = useSafeAreaInsets(); // 안전 영역 패딩 가져오기
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const { redirect } = useLocalSearchParams();
   return (
-    // <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={[{ paddingTop: insets.top - 29 }]}>
       <View>
-        
         <View style={styles.middle}>
-          <HeaderBar title="로그인" isMain={false}/>
+          <HeaderBar title="로그인" isMain={false} />
           <View style={styles.originLogin}>
             <View style={styles.inputContainer}>
               <InputField title="이메일 아이디" value={email} onChangeText={setEmail} secureTextEntry={false} />
@@ -51,7 +52,7 @@ const Middle = () => {
             </Pressable>
 
             <View style={styles.utilityContainer}>
-              <Pressable onPress={() => { }}>
+              <Pressable onPress={() => { router.push('/email-verification' as Href<string>) }}>
                 <Text style={styles.utilityText}>비밀번호 찾기</Text>
               </Pressable>
               <View style={styles.utilityDivider} />
@@ -68,26 +69,27 @@ const Middle = () => {
               <View style={styles.divider} />
             </View>
             <View style={styles.socialButtonGroup}>
-              <Pressable onPress={() => {alert("Naver Login")}}>
+              <Pressable onPress={() => { alert("Naver Login") }}>
                 <Image style={styles.socialLogo} resizeMode="cover" source={require("../../assets/images/Logo_Naver.png")} />
               </Pressable>
-              <Pressable onPress={() => {alert("Kakao Login")}}>
+              <Pressable onPress={() => { alert("Kakao Login") }}>
                 <Image style={styles.socialLogo} resizeMode="cover" source={require("../../assets/images/Logo_Kakao.png")} />
               </Pressable>
-              <Pressable onPress={() => {alert("Google Login")}}>
+              <Pressable onPress={() => { alert("Google Login") }}>
                 <Image style={styles.socialLogo} resizeMode="cover" source={require("../../assets/images/Logo_Google.png")} />
               </Pressable>
             </View>
           </View>
         </View>
       </View>
-    // </SafeAreaView>
+    </SafeAreaView>
   );
 };
 const styles = StyleSheet.create({
   middle: {
-    flex: 1,
+    //flex: 1,
     width: "100%",
+    height: "100%",
     gap: 10,
     alignItems: "center",
     backgroundColor: Color.colorWhite,
@@ -175,7 +177,8 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
   },
   socialLoginContainer: {
-    paddingVertical: 20,
+    padding: Padding.p_base,
+    //paddingVertical: 20,
     gap: 10,
     backgroundColor: Color.colorWhite,
     alignItems: "center",
@@ -211,4 +214,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Middle;
+export default Login;

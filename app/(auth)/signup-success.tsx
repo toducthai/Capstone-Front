@@ -2,6 +2,7 @@ import * as React from "react";
 import { Text, StyleSheet, View, Pressable } from "react-native";
 import { Color } from "../../constants/LoginGlobalStyles";
 import { router, useLocalSearchParams } from "expo-router";
+import HeaderBar from "@/components/HeaderBar";
 
 type SignupSuccessText = {
   name: string;
@@ -12,6 +13,7 @@ const Middle: React.FC<SignupSuccessText> = ({ name }) => {
   const nickname = searchParams.nickname || "";
   return (
     <View style={styles.middle}>
+      <HeaderBar title="회원가입" isMain={false} />
       <View style={[styles.welcomeText, styles.loginButtonBg]}>
         <Text style={[styles.text, styles.textFlexBox]}>{nickname}님, 가입을 환영합니다.</Text>
       </View>

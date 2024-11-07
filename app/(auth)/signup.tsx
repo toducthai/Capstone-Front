@@ -1,20 +1,38 @@
 import * as React from "react";
 import { useState } from "react";
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { StyleSheet, View, Text, Pressable, Button } from "react-native";
 import { Color, Border, FontSize, Padding, Gap } from "../../constants/LoginGlobalStyles";
 import InputField from "@/components/InputField";
 import { router } from "expo-router";
+import HeaderBar from "@/components/HeaderBar";
 
-const Middle = () => {
+const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [psCheck, setPsCheck] = useState("");
   const [nickname, setNickname] = useState("");
+  const [isValid, setIsValid] = useState<boolean | null>(null);
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleValidation = () => {
+    setIsValid(validateEmail(email));
+  };
 
   return (
     <View style={styles.middle}>
+      <HeaderBar title="회원가입" isMain={false} />
       <View style={styles.inputContainer}>
         <InputField title="이메일 아이디" value={email} onChangeText={setEmail} secureTextEntry={false} />
+        <Button title="검증" onPress={handleValidation} />
+        {isValid !== null && (
+          <Text style={{ color: isValid ? 'green' : 'red' }}>
+            {isValid ? '유효한 이메일입니다.' : '유효하지 않은 이메일입니다.'}
+          </Text>
+        )}
       </View>
       <View style={styles.inputContainer}>
         <InputField title="비밀번호" value={password} onChangeText={setPassword} secureTextEntry={true} />
@@ -27,8 +45,14 @@ const Middle = () => {
         <InputField title="별명" value={nickname} onChangeText={setNickname} secureTextEntry={false} />
       </View>
       <Pressable style={styles.signUpButton} onPress={() => {
-        if(password === psCheck)
-          router.push({pathname:"./signup-success", params: {nickname}})
+        if (!isValid) {
+          alert("유효하지 않은 이메일입니다");
+        }
+        else if (password !== psCheck) {
+          alert("비밀번호가 일치하지 않습니다.");
+        }
+        else
+          router.push({ pathname: "./signup-success", params: { nickname } })
       }}>
         <View style={styles.signUpButtonBackground} />
         <Text style={styles.signUpButtonText}>회원가입</Text>
@@ -79,4 +103,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Middle;
+export default SignUp;

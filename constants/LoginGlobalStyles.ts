@@ -18,6 +18,7 @@ export const Color = {
     colorGainsboro: "#d9d9d9",
     colorGray: "#8f8f8f",
     colorDarkgray: "#9a9999",
+    colorSigSky: '#82D9FF',
 };
 /* Gaps */
 export const Gap = {

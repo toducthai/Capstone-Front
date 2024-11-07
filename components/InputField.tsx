@@ -24,7 +24,7 @@ const InputField: React.FC<InputField> = ({title, value, onChangeText, secureTex
 
 const styles = StyleSheet.create({
     view:{
-        flex: 1,
+        //flex: 1,
         width: "100%",
         overflow: "hidden",
         paddingHorizontal: 16,

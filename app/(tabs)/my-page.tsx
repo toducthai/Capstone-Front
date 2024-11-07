@@ -5,14 +5,19 @@ import { Padding, Color, FontSize, Border, Gap } from "../../constants/LoginGlob
 import HeaderBar from "../../components/HeaderBar";
 import { useAuth } from "../AuthContext";
 import { Href, useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 
 export default function MyPageScreen() {
   const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
-
+  const navigation = useNavigation();
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push({ pathname: '/(auth)/login', params: { redirect: '/(tabs)/my-page' } });
+      const redirectTimeout = setTimeout(() => {
+        router.push({ pathname: '/(auth)/login', params: { redirect: '/(tabs)/my-page' } });
+      }, 1000); // 100ms 지연 후 리다이렉트
+
+      return () => clearTimeout(redirectTimeout); // 클린업 함수로 타임아웃 해제
     }
   }, [isAuthenticated]);
 
@@ -28,14 +33,17 @@ export default function MyPageScreen() {
         <Text style={styles.nicknameText}>처음보는 닉네임</Text>
         <View style={styles.buttonContainer}>
           <View style={[styles.button]}>
-            <Pressable>
+            <Pressable onPress={()=>{
+              navigation.navigate('profileedit' as never);
+              //router.push('/profileedit');
+            }}>
               <Text style={styles.buttonText}>개인 정보</Text>
             </Pressable>
           </View>
           <View style={[styles.button]}>
             <Pressable onPress={() => {
               router.push('/(tabs)/')
-              //logout(); 
+              logout(); 
               }}>
               <Text style={styles.buttonText}>로그 아웃</Text>
             </Pressable>
@@ -44,15 +52,15 @@ export default function MyPageScreen() {
       </View>
       <View style={[styles.travelSummaryContainer, styles.commonBorder]}>
         <View style={styles.travelOption}>
-          <Image style={styles.travelIcon} resizeMode="cover" source={require("../../assets/images/react-logo.png")} />
+          <Image style={styles.travelIcon} resizeMode="cover" source={require("../../assets/images/Paper.png")} />
           <Text style={styles.travelText}>지난 여행</Text>
         </View>
         <View style={styles.travelOption}>
-          <Image style={styles.travelIcon} resizeMode="cover" source={require("../../assets/images/react-logo.png")} />
+          <Image style={styles.travelIcon} resizeMode="cover" source={require("../../assets/images/Favorite.png")} />
           <Text style={styles.travelText}>찜한 여행</Text>
         </View>
         <View style={styles.travelOption}>
-          <Image style={styles.travelIcon} resizeMode="cover" source={require("../../assets/images/react-logo.png")} />
+          <Image style={styles.travelIcon} resizeMode="cover" source={require("../../assets/images/Bookmark.png")} />
           <Text style={styles.travelText}>최근 본 여행</Text>
         </View>
       </View>
@@ -166,7 +174,7 @@ const styles = StyleSheet.create({
   currentPlanContainer: {
     gap: Gap.gap_md,
     paddingVertical: 0,
-    paddingHorizontal: Padding.p_base,
+    //paddingHorizontal: Padding.p_base,
     flex: 1,
     alignSelf: "stretch",
   },
