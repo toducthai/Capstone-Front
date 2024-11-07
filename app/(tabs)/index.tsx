@@ -1,6 +1,3 @@
-// index.tsx (루트 페이지로, 메인 네비게이션 역할을 합니다.)
-// ChatBot 메인 챗봇입니다, 서버 연동 추가 및 모달 UI 추가
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, Dimensions, TouchableOpacity, ScrollView, Animated, StyleSheet } from 'react-native';
 import { GiftedChat, IMessage } from 'react-native-gifted-chat';
@@ -15,15 +12,14 @@ export default function Home() {
   const [slideAnimLeft] = useState(new Animated.Value(-width)); // 왼쪽 모달의 시작 위치 설정
   const [selectModalVisible, setSelectModalVisible] = useState(false);
   const [slideAnim] = useState(new Animated.Value(width)); // 오른쪽 모달의 시작 위치 설정
-  const [days, setDays] = useState<{ day: number, places: { id: number, name: string, location: string, imageUrl: string }[] }[]>([{
+  const [days, setDays] = useState<{ day: number, places: { id: number, name: string, address: string, imageUrl: string }[] }[]>([{
     day: 1,
     places: [
-      // { id: 1, name: '해운대 해수욕장', location: '부산광역시 해운대구', imageUrl: '' }
+      { id: 1, name: '해운대 해수욕장', address: '부산광역시 해운대구', imageUrl: '' }
     ]
   }]); // 여행 계획 일차 상태로 관리
-  const [places, setPlaces] = useState([{ id: 1, name: '해운대1', location: '부산광역시 해운대구', imageUrl: '', checked: false },
-  { id: 2, name: '해운대2', location: '부산광역시 해운대구', imageUrl: '', checked: false },
-  { id: 3, name: '해운대3', location: '부산광역시 해운대구', imageUrl: '', checked: false }
+  const [places, setPlaces] = useState([{ placeid: 1, title: '광안리 해수욕장', areaCode: '21', sigunguCode: '4', address: '부산광역시 수영구', contentid: '12345', contenttypeid: '12', tel: '051-123-4567', modifiedtime: '20240101', imageUrl: " ", checked: false },
+  // { placeid: 2, title: '태종대', areaCode: '21', sigunguCode: '3', mapx: '129.08', mapy: '35.05', address: '부산광역시 영도구', contentid: '67890', contenttypeid: '12', tel: '051-765-0987', modifiedtime: '20240102', imageUrl:" ", checked: false },
   ]);
 
   useEffect(() => {
@@ -47,36 +43,71 @@ export default function Home() {
     const additionalInfo = {
       userId: 1,
       timestamp: new Date().toISOString(),
-      location: '부산광역시 해운대구', // 예시 정보
+      address: '부산광역시 해운대구', // 예시 정보
+      daysInfo: days
     };
     try {
-      const response = await axios.post('https://your-server-endpoint.com/api/chat', {
-      message: userMessage,
-      additionalInfo: additionalInfo,
-    });
+      const response = await axios.post('http://localhost:3000/api/chat', {
+        token: 'your-token', // 적절한 인증 토큰을 추가하세요.
+        user_id: 1, // 사용자 ID
+        chatroom_id: 'chatroom-123', // 채팅방 ID (예시)
+        user_input: userMessage, // 사용자 메시지
+        user_selected_places: places.map(place => ({
+          placeid: place.placeid,
+          title: place.title,
+          areaCode: 'areaCode-example',
+          sigunguCode: 'sigunguCode-example',
+          mapx: 'mapx-example',
+          mapy: 'mapy-example',
+          address: place.address,
+          contentid: 'contentid-example',
+          contenttypeid: 'contenttypeid-example',
+          tel: 'tel-example',
+          modifiedtime: new Date().toISOString(),
+          // eventstartdate: place.eventstartdate || null,
+          // eventenddate: place.eventenddate || null,
+          summary: 'summary-example',
+          checked: place.checked
+        })),
+        user_selected_schedule: days.map(day => ({
+          day: day.day,
+          places: day.places.map(place => ({
+            placeid: place.id,
+            title: place.name,
+            address: place.address
+          }))
+        }))
+      });
 
-      const botMessage = response.data.reply;
+      const userId = response.data.user_id;
+      const chatroomId = response.data.chatroom_id;
+      const botMessage = response.data.model_output;
+      const recommendedPlaces = response.data.recommended_places;
+      console.log(recommendedPlaces)
+      setPlaces(recommendedPlaces.map((place, index) => ({ ...place, id: index + 1, checked: false })));
+
       const newMessage: IMessage = {
         _id: Math.random().toString(),
         text: botMessage,
         createdAt: new Date(),
         user: {
           _id: 2,
-          name: 'ChatBot',
-          avatar: 'https://placeimg.com/140/140/tech',
+          name: '동글이',
+          avatar: ' ',
         },
       };
       setMessages(previousMessages => GiftedChat.append(previousMessages, [newMessage]));
     } catch (error) {
-      // console.error('Error sending message to server:', error);
+      console.error('Error sending message to server:', error);
+      // setPlaces([]);
       const newMessage: IMessage = {
         _id: Math.random().toString(),
         text: "메세지가 전달되지 못했습니다.",
         createdAt: new Date(),
         user: {
           _id: 2,
-          name: 'ChatBot',
-          avatar: 'https://placeimg.com/140/140/tech',
+          name: '동글이',
+          avatar: ' ',
         },
       };
       setMessages(previousMessages => GiftedChat.append(previousMessages, [newMessage]));
@@ -158,21 +189,21 @@ export default function Home() {
           </View>
           <ScrollView style={styles.scrollView}>
             {places.map(place => (
-              <View key={place.id} style={styles.placeCard}>
+              <View key={place.placeid} style={styles.placeCard}>
                 <TouchableOpacity style={styles.checkboxContainer}
                   onPress={() => {
-                    setPlaces(prevPlaces => prevPlaces.map(p => p.id === place.id ? { ...p, checked: !p.checked } : p));
+                    setPlaces(prevPlaces => prevPlaces.map(p => p.placeid === place.placeid ? { ...p, checked: !p.checked } : p));
                   }}
                 >
                   <View style={[styles.checkbox, place.checked && styles.checkedCheckbox]}></View>
                 </TouchableOpacity>
                 <View style={styles.placeInfo}>
                   <View style={styles.imageContainer}>
-                    <img src={place.imageUrl} style={styles.placeImage} alt={place.name} />
+                    <img src={place.imageUrl} style={styles.placeImage} alt={place.title} />
                   </View>
                   <View style={styles.textContainer}>
-                    <Text style={styles.placeName}>{place.name}</Text>
-                    <Text style={styles.placeLocation}>위치: {place.location}</Text>
+                    <Text style={styles.placeName}>{place.title}</Text>
+                    <Text style={styles.placeLocation}>위치: {place.address}</Text>
                   </View>
                 </View>
               </View>
@@ -186,7 +217,7 @@ export default function Home() {
               const updatedDays = [...prevDays];
               selectedPlaces.forEach(place => {
                 const dayIndex = updatedDays.length - 1;
-                updatedDays[dayIndex].places.push(place);
+                updatedDays[dayIndex].places.push();
               });
               return updatedDays;
             });
