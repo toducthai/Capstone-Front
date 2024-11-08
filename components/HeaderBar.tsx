@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
 		gap: 34,
 		elevation: 4,
 		//position: 'absolute',
+		position: 'static',
 		top: 0,
 		left: 0,
 		right: 0
