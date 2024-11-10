@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEffect } from "react";
-import { Text, StyleSheet, View, Image, ImageBackground, Pressable } from "react-native";
+import { Text, StyleSheet, View, Image, ImageBackground, Pressable, ScrollView } from "react-native";
 import { Padding, Color, FontSize, Border, Gap } from "../../constants/LoginGlobalStyles";
 import HeaderBar from "../../components/HeaderBar";
 import { useAuth } from "../AuthContext";
@@ -66,7 +66,7 @@ export default function MyPageScreen() {
       </View>
       <View style={styles.currentPlanContainer}>
         <Text style={styles.currentPlanText}>현재 계획중인 여행</Text>
-        <View style={styles.planListContainer}>
+        <ScrollView style={styles.planListContainer}>
           {[1, 2].map((_, index) => (
             <View key={index} style={[styles.planItem, styles.planItemBorder]}>
               <View style={{flexDirection: "row", alignItems: "stretch"}}>
@@ -85,7 +85,7 @@ export default function MyPageScreen() {
               </View>
             </View>
           ))}
-        </View>
+        </ScrollView>
       </View>
     </View>
   );

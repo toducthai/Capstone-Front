@@ -58,11 +58,13 @@ const EmailVerificationScreen: React.FC = () => {
 							]}
 							disabled={code.length === 0} // 이메일이 없으면 버튼 비활성화
 							onPress={()=>{
-								if(code === "1234"){
+								if(code === "123456"){
 									setVerificated(true);
+									alert("인증이 완료되었습니다.");
 								}
 								else{
 									setVerificated(false);
+									alert("인증에 실패하였습니다.");
 								}
 							}}
 						>

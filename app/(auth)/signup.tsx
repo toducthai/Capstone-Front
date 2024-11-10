@@ -22,6 +22,25 @@ const SignUp = () => {
     setIsValid(validateEmail(email));
   };
 
+  const signup_handler = async () => {
+    try{
+      const response = await fetch('https://mywebsite.com/endpoint/', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: {email},
+          password: {password},
+          nickname: {nickname},
+        }),
+      });
+    } catch (error) {
+      console.error(error);
+    } 
+  };
+
   return (
     <View style={styles.middle}>
       <HeaderBar title="회원가입" isMain={false} />
@@ -39,20 +58,29 @@ const SignUp = () => {
       </View>
       <View style={styles.inputContainer}>
         <InputField title="비밀번호 확인" value={psCheck} onChangeText={setPsCheck} secureTextEntry={true} />
-        <Text style={styles.passwordCheckText}>{password === psCheck ? "일치" : "불일치"}</Text>
+        {password.length !== 0 && (
+          <Text style={{ color: password === psCheck ? 'green' : 'red' }}>
+            {password === psCheck ? "일치" : "불일치"}
+          </Text>
+        )}
       </View>
       <View style={styles.inputContainer}>
         <InputField title="별명" value={nickname} onChangeText={setNickname} secureTextEntry={false} />
       </View>
       <Pressable style={styles.signUpButton} onPress={() => {
         if (!isValid) {
-          alert("유효하지 않은 이메일입니다");
+          alert("유효하지 않은 이메일입니다.");
         }
         else if (password !== psCheck) {
           alert("비밀번호가 일치하지 않습니다.");
         }
-        else
+        else if(nickname === null){
+          alert("별명을 작성해주세요.")
+        }
+        else{
+          signup_handler();
           router.push({ pathname: "./signup-success", params: { nickname } })
+        }
       }}>
         <View style={styles.signUpButtonBackground} />
         <Text style={styles.signUpButtonText}>회원가입</Text>

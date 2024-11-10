@@ -24,6 +24,7 @@ export const Color = {
 export const Gap = {
     gap_sm: 4,
     gap_md: 12,
+    gap_ld: 20,
 };
 /* Paddings */
 export const Padding = {
